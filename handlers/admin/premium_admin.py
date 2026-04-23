@@ -1,8 +1,9 @@
 from aiogram import Router, types
 from aiogram.filters import Command
+import time
 
 from bot.config import OWNER_ID
-from bot.core.premium import add_premium
+from bot.database.db import premium_col  # 🔥 MongoDB
 
 router = Router()
 
@@ -17,9 +18,17 @@ async def add_premium_cmd(message: types.Message):
         days = int(days)
         user_id = int(user_id)
 
-        add_premium(user_id, days)
+        # ⏳ calculate expiry
+        expiry = time.time() + (days * 86400)
 
-        await message.reply(f"✅ Premium added for {days} days")
+        # 🔥 store in MongoDB
+        await premium_col.update_one(
+            {"user_id": user_id},
+            {"$set": {"expiry": expiry}},
+            upsert=True
+        )
+
+        await message.reply(f"💎 Premium added for {days} days")
 
     except:
         await message.reply("Usage: /addpremium days user_id")
