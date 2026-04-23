@@ -2,8 +2,9 @@ from aiogram import Router, types
 from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from config import OWNER_ID
-from core.roles import is_admin
+from bot.config import OWNER_ID
+from bot.core.roles import is_admin
+from bot.database.db import users_col  # 🔥 MongoDB
 
 router = Router()
 
@@ -76,9 +77,24 @@ def owner_panel_kb():
     ])
 
 
-# 🚀 START COMMAND
+# 🚀 START COMMAND (MONGODB CONNECTED)
 @router.message(CommandStart())
 async def start_cmd(message: types.Message):
+    user_id = message.from_user.id
+    user = message.from_user.first_name
+
+    # 🔥 SAVE USER IN MONGODB
+    await users_col.update_one(
+        {"user_id": user_id},
+        {
+            "$set": {
+                "user_id": user_id,
+                "name": user
+            }
+        },
+        upsert=True
+    )
+
     text = (
         "<blockquote>"
         "┌────── ˹ ɪɴғᴏʀᴍᴀᴛɪᴏɴ ˼─── ⏤‌‌●\n"
@@ -136,22 +152,19 @@ async def help_menu(callback: types.CallbackQuery):
 
     await callback.message.edit_text(
         text,
-        reply_markup=help_keyboard(is_admin(user_id))
+        reply_markup=help_keyboard(await is_admin(user_id))  # 🔥 async ready
     )
 
 
-# ⚙️ ADMIN PANEL CALLBACK
+# ⚙️ ADMIN PANEL
 @router.callback_query(lambda c: c.data == "admin_panel")
 async def admin_panel(callback: types.CallbackQuery):
     user_id = callback.from_user.id
 
-    if not is_admin(user_id):
+    if not await is_admin(user_id):
         return await callback.answer("Access Denied ❌", show_alert=True)
 
-    text = (
-        "<b>⚙️ Admin Panel</b>\n\n"
-        "Choose a panel below:"
-    )
+    text = "<b>⚙️ Admin Panel</b>\n\nChoose a panel below:"
 
     await callback.message.edit_text(text, reply_markup=admin_panel_kb())
 
@@ -161,14 +174,12 @@ async def admin_panel(callback: types.CallbackQuery):
 async def manager_panel(callback: types.CallbackQuery):
     user_id = callback.from_user.id
 
-    if not is_admin(user_id):
+    if not await is_admin(user_id):
         return await callback.answer("Access Denied ❌", show_alert=True)
 
     text = (
         "<b>🧑‍💼 Manager Panel</b>\n\n"
-        "🚫 BL-USER → Ban users from bot\n"
-        "📢 BROADCAST → Send message to all users\n"
-        "👤 AUTH USERS → Manage authorized users"
+        "🚫 BL-USER\n📢 BROADCAST\n👤 AUTH USERS"
     )
 
     await callback.message.edit_text(text, reply_markup=manager_panel_kb())
@@ -184,10 +195,8 @@ async def owner_panel(callback: types.CallbackQuery):
 
     text = (
         "<b>👑 Owner Panel</b>\n\n"
-        "🚫 BL-USER → Ban users\n"
-        "📢 BROADCAST → Send messages\n"
-        "➕ ADD MANAGER → Manage admins\n"
-        "💎 ADD PREMIUM → Give premium access"
+        "🚫 BL-USER\n📢 BROADCAST\n"
+        "➕ ADD MANAGER\n💎 ADD PREMIUM"
     )
 
     await callback.message.edit_text(text, reply_markup=owner_panel_kb())
