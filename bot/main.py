@@ -3,8 +3,9 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
+from bot.handlers.start import router as start_router
 
-from config import BOT_TOKEN
+from bot.config import BOT_TOKEN
 
 # 👉 import your routers
 from handlers.start import router as start_router
