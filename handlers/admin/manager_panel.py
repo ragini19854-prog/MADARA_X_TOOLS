@@ -1,7 +1,7 @@
 from aiogram import Router, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from bot.core.roles import is_admin
+from bot.core.roles import is_admin  # 🔥 async (Mongo)
 
 router = Router()
 
@@ -21,7 +21,8 @@ def manager_panel_kb():
 async def open_manager_panel(callback: types.CallbackQuery):
     user_id = callback.from_user.id
 
-    if not is_admin(user_id):
+    # 🔥 FIX: await async role check
+    if not await is_admin(user_id):
         return await callback.answer("Access Denied ❌", show_alert=True)
 
     text = (
