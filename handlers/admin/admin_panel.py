@@ -1,11 +1,12 @@
 from aiogram import Router, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from bot.core.roles import is_admin
+from bot.core.roles import is_admin  # 🔥 now async
 
 router = Router()
 
 
+# 🔘 ADMIN PANEL KEYBOARD
 def admin_panel_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🧑‍💼 MANAGER PANEL", callback_data="manager_panel")],
@@ -14,11 +15,13 @@ def admin_panel_kb():
     ])
 
 
+# ⚙️ ADMIN PANEL HANDLER (MONGO FIXED)
 @router.callback_query(lambda c: c.data == "admin_panel")
 async def open_admin_panel(callback: types.CallbackQuery):
     user_id = callback.from_user.id
 
-    if not is_admin(user_id):
+    # 🔥 FIX: async check
+    if not await is_admin(user_id):
         return await callback.answer("Access Denied ❌", show_alert=True)
 
     text = (
