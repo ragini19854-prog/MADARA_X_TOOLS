@@ -9,6 +9,7 @@ load_dotenv()
 # ==============================
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+MONGO_URI = os.getenv("MONGO_URI")
 
 # 👑 Owner
 OWNER_ID = int(os.getenv("OWNER_ID", "0"))
