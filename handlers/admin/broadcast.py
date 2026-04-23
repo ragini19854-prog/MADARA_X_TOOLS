@@ -1,23 +1,16 @@
 from aiogram import Router, types
 from aiogram.filters import Command
 
-from bot.core.roles import is_admin
+from bot.core.roles import is_admin  # 🔥 async
+from bot.database.db import users_col  # 🔥 MongoDB
 
 router = Router()
-
-# ⚠️ TEMP USER STORAGE (later move to DB)
-USERS = set()
-
-
-# 📌 SAVE USERS (call this in start.py also)
-def add_user(user_id: int):
-    USERS.add(user_id)
 
 
 # 📌 BUTTON INFO
 @router.callback_query(lambda c: c.data == "broadcast")
 async def broadcast_info(callback: types.CallbackQuery):
-    if not is_admin(callback.from_user.id):
+    if not await is_admin(callback.from_user.id):
         return await callback.answer("Access Denied ❌", show_alert=True)
 
     text = (
@@ -35,10 +28,10 @@ async def broadcast_info(callback: types.CallbackQuery):
 # 📢 BROADCAST COMMAND
 @router.message(Command("broadcast"))
 async def broadcast_message(message: types.Message):
-    if not is_admin(message.from_user.id):
+    if not await is_admin(message.from_user.id):
         return await message.reply("Not allowed ❌")
 
-    # 📌 Get text
+    # 📌 Get message text
     text = None
 
     if message.reply_to_message:
@@ -52,9 +45,10 @@ async def broadcast_message(message: types.Message):
     success = 0
     failed = 0
 
-    for user_id in USERS:
+    # 🔥 fetch users from MongoDB
+    async for user in users_col.find():
         try:
-            await message.bot.send_message(user_id, text)
+            await message.bot.send_message(user["user_id"], text)
             success += 1
         except:
             failed += 1
