@@ -4,9 +4,15 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from bot.config import OWNER_ID
 from bot.core.roles import is_admin
-from bot.database.db import users_col  # 🔥 MongoDB
+from bot.database.db import users_col
 
-router = Router()
+@router.message(CommandStart())
+async def start_cmd(message: types.Message):
+    await users_col.update_one(
+        {"user_id": message.from_user.id},
+        {"$set": {"user_id": message.from_user.id}},
+        upsert=True
+    )
 
 
 # 🔘 START KEYBOARD
