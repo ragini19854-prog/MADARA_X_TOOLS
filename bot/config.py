@@ -59,7 +59,7 @@ MAX_WORKERS = 2
 # 🌐 LINKS (EDIT THESE)
 # ==============================
 
-CHANNEL_LINK = https://t.me/+Imyf3M9TO5k1ODRl"
+CHANNEL_LINK = "https://t.me/+Imyf3M9TO5k1ODRl"
 GROUP_LINK = "https://t.me/+dv_rcq5uIXhmMWM1"
 DEVELOPER_LINK = "https://t.me/YOUR_MADARA_BRO"
 
